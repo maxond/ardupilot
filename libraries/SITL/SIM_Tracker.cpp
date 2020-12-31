@@ -22,11 +22,6 @@
 
 namespace SITL {
 
-Tracker::Tracker(const char *home_str, const char *frame_str) :
-Aircraft(home_str, frame_str)
-{}
-
-
 /*
   update function for position (normal) servos.
 */
@@ -134,6 +129,7 @@ void Tracker::update(const struct sitl_input &input)
     // new velocity vector
     velocity_ef.zero();
     update_position();
+    time_advance();
 
     // update magnetic field
     update_mag_field_bf();

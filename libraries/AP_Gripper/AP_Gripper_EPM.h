@@ -5,23 +5,23 @@
  *      Author: Andreas Jochum
  *              Pavel Kirienko <pavel.kirienko@zubax.com> - UAVCAN support
  *
- *      Set-up Wiki: http://copter.ardupilot.org/wiki/common-electro-permanent-magnet-gripper/
+ *      Set-up Wiki: https://copter.ardupilot.org/wiki/common-electro-permanent-magnet-gripper/
  *      EPM docs:    https://docs.zubax.com/opengrab_epm_v3
  */
 
-/// @file	AP_EPM.h
-/// @brief	AP_EPM control class
+/// @file   AP_EPM.h
+/// @brief  AP_EPM control class
 #pragma once
 
 #include "AP_Gripper.h"
 #include "AP_Gripper_Backend.h"
 
-#include <RC_Channel/RC_Channel.h>
+#include <SRV_Channel/SRV_Channel.h>
 
 #define EPM_RETURN_TO_NEUTRAL_MS    500         // EPM PWM returns to neutral position this many milliseconds after grab or release
 
-/// @class	AP_Gripper_EPM
-/// @brief	Class to manage the EPM_CargoGripper 
+/// @class  AP_Gripper_EPM
+/// @brief  Class to manage the EPM_CargoGripper 
 class AP_Gripper_EPM : public AP_Gripper_Backend {
 public:
     AP_Gripper_EPM(struct AP_Gripper::Backend_Config &_config);
@@ -34,6 +34,12 @@ public:
 
     // release - move the EPM pwm output to the release position
     void        release() override;
+
+    // grabbed - returns true if gripper in grabbed state
+    bool grabbed() const override;
+
+    // released - returns true if gripper in released state
+    bool released() const override;
 
     // update - moves the pwm back to neutral after the timeout has passed
     // should be called at at least 10hz

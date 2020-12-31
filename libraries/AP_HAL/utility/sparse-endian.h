@@ -25,19 +25,19 @@
 #include <stdint.h>
 
 #ifdef __CHECKER__
-#define __bitwise __attribute__((bitwise))
-#define __force __attribute__((force))
+#define __ap_bitwise __attribute__((bitwise))
+#define __ap_force __attribute__((force))
 #else
-#define __bitwise
-#define __force
+#define __ap_bitwise
+#define __ap_force
 #endif
 
-typedef uint16_t __bitwise le16_t;
-typedef uint16_t __bitwise be16_t;
-typedef uint32_t __bitwise le32_t;
-typedef uint32_t __bitwise be32_t;
-typedef uint64_t __bitwise le64_t;
-typedef uint64_t __bitwise be64_t;
+typedef uint16_t __ap_bitwise le16_t;
+typedef uint16_t __ap_bitwise be16_t;
+typedef uint32_t __ap_bitwise le32_t;
+typedef uint32_t __ap_bitwise be32_t;
+typedef uint64_t __ap_bitwise le64_t;
+typedef uint64_t __ap_bitwise be64_t;
 
 #undef htobe16
 #undef htole16
@@ -68,18 +68,36 @@ typedef uint64_t __bitwise be64_t;
 #define bswap_64_on_be(x) __bswap_64(x)
 #endif
 
-static inline le16_t htole16(uint16_t value) { return (le16_t __force) bswap_16_on_be(value); }
-static inline le32_t htole32(uint32_t value) { return (le32_t __force) bswap_32_on_be(value); }
-static inline le64_t htole64(uint64_t value) { return (le64_t __force) bswap_64_on_be(value); }
+static inline le16_t htole16(uint16_t value) { return (le16_t __ap_force) bswap_16_on_be(value); }
+static inline le32_t htole32(uint32_t value) { return (le32_t __ap_force) bswap_32_on_be(value); }
+static inline le64_t htole64(uint64_t value) { return (le64_t __ap_force) bswap_64_on_be(value); }
 
-static inline be16_t htobe16(uint16_t value) { return (be16_t __force) bswap_16_on_le(value); }
-static inline be32_t htobe32(uint32_t value) { return (be32_t __force) bswap_32_on_le(value); }
-static inline be64_t htobe64(uint64_t value) { return (be64_t __force) bswap_64_on_le(value); }
+static inline be16_t htobe16(uint16_t value) { return (be16_t __ap_force) bswap_16_on_le(value); }
+static inline be32_t htobe32(uint32_t value) { return (be32_t __ap_force) bswap_32_on_le(value); }
+static inline be64_t htobe64(uint64_t value) { return (be64_t __ap_force) bswap_64_on_le(value); }
 
-static inline uint16_t le16toh(le16_t value) { return bswap_16_on_be((uint16_t __force)value); }
-static inline uint32_t le32toh(le32_t value) { return bswap_32_on_be((uint32_t __force)value); }
-static inline uint64_t le64toh(le64_t value) { return bswap_64_on_be((uint64_t __force)value); }
+static inline uint16_t le16toh(le16_t value) { return bswap_16_on_be((uint16_t __ap_force)value); }
+static inline uint32_t le32toh(le32_t value) { return bswap_32_on_be((uint32_t __ap_force)value); }
+static inline uint64_t le64toh(le64_t value) { return bswap_64_on_be((uint64_t __ap_force)value); }
 
-static inline uint16_t be16toh(be16_t value) { return bswap_16_on_le((uint16_t __force)value); }
-static inline uint32_t be32toh(be32_t value) { return bswap_32_on_le((uint32_t __force)value); }
-static inline uint64_t be64toh(be64_t value) { return bswap_64_on_le((uint64_t __force)value); }
+static inline uint16_t be16toh(be16_t value) { return bswap_16_on_le((uint16_t __ap_force)value); }
+static inline uint32_t be32toh(be32_t value) { return bswap_32_on_le((uint32_t __ap_force)value); }
+static inline uint64_t be64toh(be64_t value) { return bswap_64_on_le((uint64_t __ap_force)value); }
+
+// methods for misaligned buffers
+static inline uint16_t le16toh_ptr(const uint8_t *p) { return p[0] | (p[1]<<8U); }
+static inline uint32_t le24toh_ptr(const uint8_t *p) { return p[0] | (p[1]<<8U) | (p[2]<<16U); }
+static inline uint32_t le32toh_ptr(const uint8_t *p) { return p[0] | (p[1]<<8U) | (p[2]<<16U) | (p[3]<<24U); }
+static inline uint16_t be16toh_ptr(const uint8_t *p) { return p[1] | (p[0]<<8U); }
+static inline uint32_t be24toh_ptr(const uint8_t *p) { return p[2] | (p[1]<<8U) | (p[0]<<16U); }
+static inline uint32_t be32toh_ptr(const uint8_t *p) { return p[3] | (p[2]<<8U) | (p[1]<<16U) | (p[0]<<24U); }
+
+static inline void put_le16_ptr(uint8_t *p, uint16_t v) { p[0] = (v&0xFF); p[1] = (v>>8); }
+static inline void put_le24_ptr(uint8_t *p, uint32_t v) { p[0] = (v&0xFF); p[1] = (v>>8)&0xFF; p[2] = (v>>16)&0xFF; }
+static inline void put_le32_ptr(uint8_t *p, uint32_t v) { p[0] = (v&0xFF); p[1] = (v>>8)&0xFF; p[2] = (v>>16)&0xFF; p[3] = (v>>24)&0xFF; }
+static inline void put_be16_ptr(uint8_t *p, uint16_t v) { p[1] = (v&0xFF); p[0] = (v>>8); }
+static inline void put_be24_ptr(uint8_t *p, uint32_t v) { p[2] = (v&0xFF); p[1] = (v>>8)&0xFF; p[0] = (v>>16)&0xFF; }
+static inline void put_be32_ptr(uint8_t *p, uint32_t v) { p[3] = (v&0xFF); p[2] = (v>>8)&0xFF; p[1] = (v>>16)&0xFF; p[0] = (v>>24)&0xFF; }
+
+#undef __ap_bitwise
+#undef __ap_force

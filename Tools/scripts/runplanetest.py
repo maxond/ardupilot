@@ -9,7 +9,7 @@ def wait_heartbeat(mav, timeout=10):
     while time.time() < start_time+timeout:
         if mav.recv_match(type='HEARTBEAT', blocking=True, timeout=0.5) is not None:
             return
-    failure("Failed to get heartbeat")    
+    raise Exception("Failed to get heartbeat")    
 
 def wait_mode(mav, modes, timeout=10):
     '''wait for one of a set of flight modes'''
@@ -35,22 +35,18 @@ def wait_time(mav, simtime):
         if t2 - t1 > simtime:
             break
 
-cmd = 'sim_vehicle.py -j4 -D -f plane'
+cmd = '../Tools/autotest/sim_vehicle.py -D -f quadplane'
 mavproxy = pexpect.spawn(cmd, logfile=sys.stdout, timeout=30)
-mavproxy.expect("Ready to fly")
+mavproxy.expect("ArduPilot Ready")
 
 mav = mavutil.mavlink_connection('127.0.0.1:14550')
 
-wait_mode(mav, ['MANUAL'])
-mavproxy.send('wp list\n')
-mavproxy.expect('Requesting')
-wait_time(mav, 30)
-mavproxy.send('arm throttle\n')
+mavproxy.send('speedup 40\n')
+mavproxy.expect('using GPS')
+mavproxy.expect('using GPS')
+mavproxy.expect('using GPS')
+mavproxy.expect('using GPS')
 mavproxy.send('auto\n')
+mavproxy.send('arm throttle\n')
 wait_mode(mav, ['AUTO'])
-mavproxy.send('module load console\n')
-mavproxy.send('module load map\n')
-mavproxy.send('map set showsimpos 1\n')
-mavproxy.logfile = None
-mavproxy.interact()
-
+mavproxy.expect("Mission: 5 WP")
